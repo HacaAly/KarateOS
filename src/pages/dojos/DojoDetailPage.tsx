@@ -133,7 +133,7 @@ export default function DojoDetailPage() {
           </dl>
         </Card>)}
       {tab === 'anggota' && <MembersTab dojoId={id} canManage={canManage} canAssignAdmin={access.isOrgAdmin(d.organization_id)} />}
-      {tab === 'permohonan' && <ApplicationsTab dojoId={id} />}
+      {tab === 'permohonan' && <ApplicationsTab dojoId={id} onDecided={stats.reload} />}
       {tab === 'atlet' && <AthletesTab dojoId={id} />}
       {tab === 'pelatih' && <CoachesTab dojoId={id} />}
       {tab === 'jadwal' && <SchedulesTab dojoId={id} />}
@@ -211,11 +211,11 @@ function MembersTab({ dojoId, canManage, canAssignAdmin }: { dojoId: string; can
   )
 }
 
-function ApplicationsTab({ dojoId }: { dojoId: string }) {
+function ApplicationsTab({ dojoId, onDecided }: { dojoId: string; onDecided: () => void }) {
   const toast = useToast()
   const apps = useAsync(() => listApplications(dojoId), [dojoId])
   async function decide(a: DojoApplicationRow, status: 'approved' | 'rejected') {
-    try { await decideApplication(a.id, status); toast.success(status === 'approved' ? 'Permohonan disetujui. Pemohon kini menjadi anggota.' : 'Permohonan ditolak.'); apps.reload() }
+    try { await decideApplication(a.id, status); toast.success(status === 'approved' ? 'Permohonan disetujui. Pemohon kini menjadi anggota dan terdaftar di daftar atlet (bila mendaftar sebagai atlet).' : 'Permohonan ditolak.'); apps.reload(); onDecided() }
     catch (err) { toast.error(toMessage(err)); apps.reload() }
   }
   const cols: Column<DojoApplicationRow>[] = [

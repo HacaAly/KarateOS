@@ -118,3 +118,12 @@ Perubahan hanya di sisi tampilan (`src/`, `index.html`, `public/favicon.svg`). S
 - `tsc -b`, `npm run build`, `npm run test:rls` (101 lulus; PGlite, bukan Supabase asli).
 - Pemeriksaan otomatis 18 rute × lebar 320/375/430/768/1024/1280/1440: tanpa overflow horizontal dan tanpa error konsol, **dengan data tiruan** (Supabase dimock).
 - **Belum diuji**: alur nyata ke project Supabase (login, simpan data), pembaca layar sungguhan, perangkat fisik, Lighthouse.
+
+## Hapus berantai (migrasi 0005)
+
+Menghapus dojo atau organisasi kini otomatis menghapus seluruh data di bawahnya dalam **satu transaksi** (gagal di tengah = rollback total), setelah pengguna melihat popup berisi jumlah data yang ikut terhapus dan mengetik nama sebagai konfirmasi. Popup juga menawarkan **"Nonaktifkan saja"** (data tetap tersimpan).
+
+- Dojo: `delete_dojo_cascade` — hanya admin/owner organisasi. Organisasi: `delete_organization_cascade` — hanya Owner. Izin diperiksa di dalam fungsi; `anon` dan pengguna lain ditolak.
+- **Jalankan `supabase/migrations/0005_cascade_delete.sql` di SQL Editor Supabase** (pilih "Run and enable RLS" bila muncul).
+- Catatan: "lepas hubungan" (memindahkan atlet/dojo tanpa induk) tidak disediakan karena setiap atlet/dojo wajib punya induk, dan trigger keamanan melarang pemindahan dojo/organisasi.
+- Diuji: `npm run test:rls` → 110 lulus (PGlite). Popup diuji dengan data tiruan; belum dicoba di Supabase asli.
