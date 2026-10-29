@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   DESIGN TOKENS — satu-satunya tempat warna, tipografi, bayangan, dan z-index
+   didefinisikan. Mengubah tema = mengubah nilai di blok ini.
+   ===================================================================== */
+@theme static {
+  /* Tipografi */
+  --font-sans: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Sora", "Figtree", ui-sans-serif, system-ui, sans-serif;
+
+  /* Merek: Electric Blue. 600 dipakai untuk tombol (kontras putih 5.2:1), 500 untuk aksen/grafik */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+
+  /* Aksen sekunder */
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-violet-50: #f5f3ff;
+  --color-violet-100: #ede9fe;
+  --color-violet-500: #8b5cf6;
+  --color-violet-600: #7c3aed;
+  --color-violet-700: #6d28d9;
+
+  /* Netral: navy (ink-900) + slate */
+  --color-ink-950: #0b1220;
+  --color-ink-900: #111827;
+  --color-ink-800: #1f2937;
+  --color-ink-700: #334155;
+  --color-ink-500: #64748b;
+  --color-ink-400: #94a3b8;
+  --color-ink-300: #cbd5e1;
+  --color-ink-200: #e2e8f0;
+  --color-ink-100: #f1f5f9;
+  --color-ink-50: #f8fafc;
+
+  /* Warna sabuk (dipakai pada visual sabuk) */
+  --color-belt-putih: #f8fafc;
+  --color-belt-kuning: #facc15;
+  --color-belt-oranye: #fb923c;
+  --color-belt-hijau: #22c55e;
+  --color-belt-biru: #3b82f6;
+  --color-belt-cokelat: #92400e;
+  --color-belt-hitam: #111827;
+
+  /* Radius, bayangan, z-index */
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+  --shadow-card: 0 1px 2px rgb(17 24 39 / 0.04), 0 1px 3px rgb(17 24 39 / 0.06);
+  --shadow-lift: 0 4px 12px rgb(17 24 39 / 0.08), 0 12px 28px rgb(17 24 39 / 0.08);
+  --shadow-pop: 0 12px 32px rgb(17 24 39 / 0.18);
+  --z-sticky: 30;
+  --z-drawer: 40;
+  --z-modal: 50;
+  --z-toast: 100;
+
+  --animate-fade-in: fade-in 0.25s ease-out both;
+  --animate-pop-in: pop-in 0.18s ease-out both;
+  --animate-sheet-in: sheet-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-toast-in: toast-in 0.22s ease-out both;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+}
+
+@keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes pop-in { from { opacity: 0; transform: scale(0.97) translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes sheet-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes toast-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  @apply bg-ink-50 font-sans text-ink-900 antialiased;
+}
+
+h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+
+/* Fokus keyboard yang selalu terlihat */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-ink-100) 25%, var(--color-ink-200) 37%, var(--color-ink-100) 63%);
+  background-size: 400% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Hormati preferensi pengurangan gerak */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes drawer-in { from { transform: translateX(-100%); } to { transform: none; } }
