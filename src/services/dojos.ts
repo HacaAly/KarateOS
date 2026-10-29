@@ -111,3 +111,15 @@ export async function dojoStats(dojoId: string): Promise<{ athletes: number; coa
   for (const r of [a, c, s]) if (r.error) throw r.error
   return { athletes: a.count ?? 0, coaches: c.count ?? 0, upcoming: s.count ?? 0 }
 }
+
+export type DojoDeletePreview = { athletes: number; coaches: number; schedules: number; attendance: number; achievements: number; entries: number; payments: number; members: number; applications: number }
+export async function dojoDeletePreview(id: string): Promise<DojoDeletePreview> {
+  const { data, error } = await supabase.rpc('dojo_delete_preview', { p_dojo: id })
+  if (error) throw error
+  return data as DojoDeletePreview
+}
+/** Hapus dojo beserta seluruh data terikat dalam satu transaksi (izin diperiksa di database). */
+export async function deleteDojoCascade(id: string): Promise<void> {
+  const { error } = await supabase.rpc('delete_dojo_cascade', { p_dojo: id })
+  if (error) throw error
+}

@@ -57,3 +57,15 @@ export async function listOrgDojos(orgId: string): Promise<Dojo[]> {
   if (error) throw error
   return (data ?? []) as Dojo[]
 }
+
+export type OrganizationDeletePreview = { dojos: number; athletes: number; coaches: number; schedules: number; payments: number; achievements: number; competitions: number; members: number }
+export async function organizationDeletePreview(id: string): Promise<OrganizationDeletePreview> {
+  const { data, error } = await supabase.rpc('organization_delete_preview', { p_org: id })
+  if (error) throw error
+  return data as OrganizationDeletePreview
+}
+/** Hapus organisasi beserta dojo & seluruh isinya dalam satu transaksi (hanya Owner). */
+export async function deleteOrganizationCascade(id: string): Promise<void> {
+  const { error } = await supabase.rpc('delete_organization_cascade', { p_org: id })
+  if (error) throw error
+}

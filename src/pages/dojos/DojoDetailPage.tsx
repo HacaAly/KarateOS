@@ -12,12 +12,13 @@ import { Badge } from '../../components/ui/Badge'
 import { Avatar } from '../../components/ui/Avatar'
 import { Input, Select } from '../../components/ui/Field'
 import { Modal, ConfirmDialog } from '../../components/ui/Modal'
+import { CascadeDeleteDialog } from '../../components/ui/CascadeDeleteDialog'
 import { Tabs } from '../../components/ui/Tabs'
 import { EmptyState, ErrorState, Spinner } from '../../components/ui/States'
 import { DataTable, type Column } from '../../components/tables/DataTable'
 import { DojoFormModal } from './DojoFormModal'
 import {
-  addDojoMember, dojoStats, decideApplication, deleteDojo, getDojo, listApplications, listDojoMembers, removeDojoMember,
+  addDojoMember, dojoStats, deleteDojoCascade, dojoDeletePreview, decideApplication, getDojo, listApplications, listDojoMembers, removeDojoMember,
   updateDojo, updateDojoMemberStatus, type DojoInput,
 } from '../../services/dojos'
 import { listAthletes } from '../../services/athletes'
@@ -85,8 +86,14 @@ export default function DojoDetailPage() {
 
   async function remove() {
     setBusy(true)
-    try { await deleteDojo(id); toast.success('Dojo dihapus.'); access.reload(); navigate('/dojo', { replace: true }) }
+    try { await deleteDojoCascade(id); toast.success('Dojo dan seluruh data terikat dihapus.'); access.reload(); navigate('/dojo', { replace: true }) }
     catch (err) { toast.error(toMessage(err)); setDeleteOpen(false) } finally { setBusy(false) }
+  }
+
+  async function deactivate() {
+    setBusy(true)
+    try { await updateDojo(id, { name: d.name, address: d.address, description: d.description, contact: d.contact, status: 'inactive' }); toast.success('Dojo dinonaktifkan. Data tetap tersimpan.'); setDeleteOpen(false); dojo.reload(); access.reload() }
+    catch (err) { toast.error(toMessage(err)) } finally { setBusy(false) }
   }
 
   async function copyId() {
@@ -136,8 +143,12 @@ export default function DojoDetailPage() {
       {tab === 'pembayaran' && <PaymentsTab dojoId={id} />}
 
       <DojoFormModal open={editOpen} onClose={() => setEditOpen(false)} organizations={access.organizations} dojo={d} busy={busy} onSubmit={(v) => void save(v)} />
-      <ConfirmDialog open={deleteOpen} title="Hapus dojo" loading={busy} onCancel={() => setDeleteOpen(false)} onConfirm={() => void remove()}
-        message="Dojo hanya dapat dihapus jika tidak memiliki atlet, pelatih, jadwal, atau pembayaran. Tindakan ini tidak dapat dibatalkan." />
+      <CascadeDeleteDialog open={deleteOpen} kind="dojo" name={d.name} busy={busy} onCancel={() => setDeleteOpen(false)}
+        onDeleteAll={() => void remove()} onDeactivate={d.status === 'active' ? () => void deactivate() : undefined}
+        loadItems={async () => { const p = await dojoDeletePreview(id); return [
+          { label: 'Atlet', count: p.athletes }, { label: 'Pelatih', count: p.coaches }, { label: 'Jadwal latihan', count: p.schedules }, { label: 'Catatan kehadiran', count: p.attendance },
+          { label: 'Prestasi', count: p.achievements }, { label: 'Peserta kompetisi', count: p.entries }, { label: 'Pembayaran', count: p.payments },
+          { label: 'Anggota dojo', count: p.members }, { label: 'Permohonan bergabung', count: p.applications }] }} />
     </>
   )
 }

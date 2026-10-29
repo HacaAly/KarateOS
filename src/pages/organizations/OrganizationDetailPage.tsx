@@ -10,10 +10,11 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { Input, Select, Textarea } from '../../components/ui/Field'
 import { Modal, ConfirmDialog } from '../../components/ui/Modal'
+import { CascadeDeleteDialog } from '../../components/ui/CascadeDeleteDialog'
 import { EmptyState, ErrorState, Spinner } from '../../components/ui/States'
 import { DataTable, type Column } from '../../components/tables/DataTable'
 import {
-  addOrgMember, deleteOrganization, getOrganization, listOrgDojos, listOrgMembers, removeOrgMember,
+  addOrgMember, deleteOrganizationCascade, organizationDeletePreview, getOrganization, listOrgDojos, listOrgMembers, removeOrgMember,
   updateOrganization, updateOrgMemberRole,
 } from '../../services/organizations'
 import { toMessage } from '../../lib/supabase'
@@ -82,8 +83,14 @@ export default function OrganizationDetailPage() {
 
   async function confirmDelete() {
     setBusy(true)
-    try { await deleteOrganization(id); toast.success('Organisasi dihapus.'); access.reload(); navigate('/organisasi', { replace: true }) }
+    try { await deleteOrganizationCascade(id); toast.success('Organisasi dan seluruh data terikat dihapus.'); access.reload(); navigate('/organisasi', { replace: true }) }
     catch (err) { toast.error(toMessage(err)); setDeleteOpen(false) } finally { setBusy(false) }
+  }
+
+  async function deactivate() {
+    setBusy(true)
+    try { await updateOrganization(id, { name: o.name, description: o.description, status: 'inactive' }); toast.success('Organisasi dinonaktifkan. Data tetap tersimpan.'); setDeleteOpen(false); org.reload(); access.reload() }
+    catch (err) { toast.error(toMessage(err)) } finally { setBusy(false) }
   }
 
   const memberCols: Column<OrganizationMemberRow>[] = [
@@ -144,8 +151,11 @@ export default function OrganizationDetailPage() {
 
       <ConfirmDialog open={!!removeTarget} title="Hapus anggota" loading={busy} onCancel={() => setRemoveTarget(null)} onConfirm={() => void confirmRemove()}
         message={<>Hapus <strong>{removeTarget?.full_name || 'anggota ini'}</strong> dari organisasi? Organisasi harus selalu memiliki minimal satu Owner.</>} />
-      <ConfirmDialog open={deleteOpen} title="Hapus organisasi" loading={busy} onCancel={() => setDeleteOpen(false)} onConfirm={() => void confirmDelete()}
-        message="Organisasi hanya dapat dihapus jika tidak memiliki dojo maupun kompetisi. Tindakan ini tidak dapat dibatalkan." />
+      <CascadeDeleteDialog open={deleteOpen} kind="organisasi" name={o.name} busy={busy} onCancel={() => setDeleteOpen(false)}
+        onDeleteAll={() => void confirmDelete()} onDeactivate={o.status === 'active' ? () => void deactivate() : undefined}
+        loadItems={async () => { const p = await organizationDeletePreview(id); return [
+          { label: 'Dojo', count: p.dojos }, { label: 'Atlet', count: p.athletes }, { label: 'Pelatih', count: p.coaches }, { label: 'Jadwal latihan', count: p.schedules },
+          { label: 'Prestasi', count: p.achievements }, { label: 'Pembayaran', count: p.payments }, { label: 'Kompetisi', count: p.competitions }, { label: 'Anggota organisasi', count: p.members }] }} />
     </>
   )
 }
