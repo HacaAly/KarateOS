@@ -11,6 +11,7 @@ import { attendanceIcon, medalIcon, paymentIcon } from '../../components/ui/Stat
 import { Badge } from '../../components/ui/Badge'
 import { Avatar } from '../../components/ui/Avatar'
 import { Input, Select } from '../../components/ui/Field'
+import { PhotoUploader } from '../../components/ui/PhotoUploader'
 import { Modal, ConfirmDialog } from '../../components/ui/Modal'
 import { CascadeDeleteDialog } from '../../components/ui/CascadeDeleteDialog'
 import { Tabs } from '../../components/ui/Tabs'
@@ -108,6 +109,7 @@ export default function DojoDetailPage() {
           {canManage && <Button variant="secondary" onClick={() => setEditOpen(true)}>Ubah dojo</Button>}
           {canDelete && <Button variant="danger" onClick={() => setDeleteOpen(true)}>Hapus</Button>}
         </>} />
+      <Card className="mb-5"><PhotoUploader kind="dojos" id={id} name={d.name} url={d.logo_url} canEdit={canManage} onChanged={() => { dojo.reload(); access.reload() }} /></Card>
       {canStaff && stats.data && (
         <dl className="mb-5 grid grid-cols-3 gap-2 sm:gap-3">
           {([['Atlet', stats.data.athletes, <Users key="a" size={16} />, 'text-brand-700 bg-brand-50'], ['Pelatih', stats.data.coaches, <Award key="c" size={16} />, 'text-teal-700 bg-teal-50'], ['Jadwal', stats.data.upcoming, <CalendarDays key="j" size={16} />, 'text-violet-700 bg-violet-50']] as const).map(([l, v, ic, tone]) => (

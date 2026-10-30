@@ -112,6 +112,7 @@ export interface Coach {
   phone: string | null
   belt_rank: BeltRank | null
   license_number: string | null
+  photo_url: string | null
   status: EntityStatus
   created_at: string
   updated_at: string

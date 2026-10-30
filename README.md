@@ -127,3 +127,17 @@ Menghapus dojo atau organisasi kini otomatis menghapus seluruh data di bawahnya 
 - **Jalankan `supabase/migrations/0005_cascade_delete.sql` di SQL Editor Supabase** (pilih "Run and enable RLS" bila muncul).
 - Catatan: "lepas hubungan" (memindahkan atlet/dojo tanpa induk) tidak disediakan karena setiap atlet/dojo wajib punya induk, dan trigger keamanan melarang pemindahan dojo/organisasi.
 - Diuji: `npm run test:rls` → 110 lulus (PGlite). Popup diuji dengan data tiruan; belum dicoba di Supabase asli.
+
+## Persetujuan permohonan → data atlet (migrasi 0006)
+
+Menyetujui permohonan bergabung sebagai **atlet** kini otomatis membuat data atlet (tertaut ke akun pemohon) sehingga langsung muncul di daftar Atlet dan statistik dojo; sebelumnya hanya tercatat di tab Anggota. Pemohon sebagai **wali** tidak membuat atlet (tautkan ke anak lewat halaman atlet). Migrasi juga memulihkan pemohon atlet yang sudah disetujui sebelumnya. Jalankan `0006_approval_creates_athlete.sql` di SQL Editor.
+
+## Foto (migrasi 0007)
+
+Foto/logo bisa diunggah untuk **organisasi, dojo, atlet, dan pelatih** (profil pengguna sudah ada sebelumnya). Tombol hanya tampil untuk yang berhak: organisasi → admin organisasi; dojo & pelatih → pengelola dojo; atlet → staf dojo. Izin ditegakkan di database (Storage policy), bukan hanya di tombol.
+
+- Jalankan `supabase/migrations/0007_entity_photos.sql` (menambah kolom `coaches.photo_url` dan policy Storage; bucket `avatars` dari 0004 harus sudah ada).
+- Foto besar dikecilkan otomatis di browser (maks. 1024 px, dikompres) agar muat batas 2 MB; format JPG/PNG/WebP. Foto lama dihapus saat diganti.
+- Bucket `avatars` bersifat **publik** — jangan unggah dokumen sensitif.
+
+Diuji: policy Storage (RLS suite, 120 lulus), alur unggah dengan Storage tiruan (kompres → unggah → simpan URL). **Belum diuji**: Storage Supabase asli.

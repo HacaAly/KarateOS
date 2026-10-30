@@ -9,6 +9,7 @@ import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { Input, Select, Textarea } from '../../components/ui/Field'
+import { PhotoUploader } from '../../components/ui/PhotoUploader'
 import { Modal, ConfirmDialog } from '../../components/ui/Modal'
 import { CascadeDeleteDialog } from '../../components/ui/CascadeDeleteDialog'
 import { EmptyState, ErrorState, Spinner } from '../../components/ui/States'
@@ -118,6 +119,7 @@ export default function OrganizationDetailPage() {
           {isAdmin && <Button variant="secondary" onClick={openEdit}>Ubah informasi</Button>}
           {isOwner && <Button variant="danger" onClick={() => setDeleteOpen(true)}>Hapus</Button>}
         </>} />
+      <Card className="mb-4"><PhotoUploader kind="organizations" id={id} name={o.name} url={o.logo_url} canEdit={isAdmin} onChanged={() => { org.reload(); access.reload() }} /></Card>
       <div className="mb-4 flex items-center gap-2"><Badge tone={toneFor.status(o.status)}>{entityStatusLabel[o.status]}</Badge><span className="text-xs text-ink-500">Dibuat {formatDate(o.created_at)}</span></div>
 
       <div className="grid gap-6">

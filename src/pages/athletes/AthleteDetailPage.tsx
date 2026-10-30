@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAccess } from '../../hooks/useAccess'
 import { useAsync } from '../../hooks/useAsync'
 import { useToast } from '../../hooks/useToast'
+import { PhotoUploader } from '../../components/ui/PhotoUploader'
+import { Avatar } from '../../components/ui/Avatar'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -56,13 +58,14 @@ export default function AthleteDetailPage() {
 
   return (
     <>
-      <PageHeader title={a.full_name} description={`${access.dojoName(a.dojo_id)} · Sabuk ${beltLabel[a.belt_rank]}`}
+      <PageHeader leading={<Avatar name={a.full_name} src={a.photo_url} size="lg" />} title={a.full_name} description={`${access.dojoName(a.dojo_id)} · Sabuk ${beltLabel[a.belt_rank]}`}
         actions={<>
           <Link to="/atlet"><Button variant="secondary">Kembali</Button></Link>
           {canManage && <Button variant="secondary" onClick={() => setLinkOpen(true)}>Tautkan akun</Button>}
           {canStaff && <Button variant="secondary" onClick={() => setEditOpen(true)}>Ubah</Button>}
           {canManage && <Button variant="danger" onClick={() => setDelOpen(true)}>Hapus</Button>}
         </>} />
+      <Card className="mb-5"><PhotoUploader kind="athletes" id={id} name={a.full_name} url={a.photo_url} canEdit={canStaff} size="xl" rounded="full" onChanged={() => athlete.reload()} /></Card>
       <div className="grid gap-6">
         <Card title="Data atlet">
           <dl className="grid gap-4 sm:grid-cols-3">

@@ -7,6 +7,7 @@ import { useToast } from '../../hooks/useToast'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { PhotoUploader } from '../../components/ui/PhotoUploader'
 import { Avatar } from '../../components/ui/Avatar'
 import { Badge } from '../../components/ui/Badge'
 import { FilterSelect, Input, Select } from '../../components/ui/Field'
@@ -63,7 +64,7 @@ export default function CoachesPage() {
 
   const rows = list.data?.filter((c) => c.full_name.toLowerCase().includes(search.toLowerCase())) ?? null
   const cols: Column<Coach>[] = [
-    { key: 'name', header: 'Nama', render: (c) => <div className="flex min-w-0 items-center gap-3"><Avatar name={c.full_name} size="sm" /><div className="min-w-0"><p className="font-medium">{c.full_name}</p><p className="text-xs text-ink-500">{c.license_number ? `Lisensi ${c.license_number}` : 'Tanpa nomor lisensi'}</p></div></div> },
+    { key: 'name', header: 'Nama', render: (c) => <div className="flex min-w-0 items-center gap-3"><Avatar name={c.full_name} src={c.photo_url} size="sm" /><div className="min-w-0"><p className="font-medium">{c.full_name}</p><p className="text-xs text-ink-500">{c.license_number ? `Lisensi ${c.license_number}` : 'Tanpa nomor lisensi'}</p></div></div> },
     { key: 'dojo', header: 'Dojo', render: (c) => access.dojoName(c.dojo_id) },
     { key: 'belt', header: 'Sabuk', render: (c) => (c.belt_rank ? beltLabel[c.belt_rank] : '—') },
     { key: 'phone', header: 'Telepon', render: (c) => c.phone ?? '—' },
@@ -88,6 +89,7 @@ export default function CoachesPage() {
       </Card>
       <Modal open={open} title={edit ? 'Ubah pelatih' : 'Tambah pelatih'} onClose={() => setOpen(false)}
         footer={<><Button variant="secondary" onClick={() => setOpen(false)}>Batal</Button><Button type="submit" form="coach-form" loading={busy}>Simpan</Button></>}>
+        {edit && <div className="mb-4"><PhotoUploader kind="coaches" id={edit.id} name={edit.full_name} url={edit.photo_url} canEdit rounded="full" onChanged={(u) => { setEdit({ ...edit, photo_url: u }); list.reload() }} /></div>}
         <form id="coach-form" onSubmit={submit} className="space-y-4" noValidate>
           <DojoSelectField dojos={access.manageableDojos} value={f.dojo_id} disabled={!!edit} onChange={(v) => setF({ ...f, dojo_id: v })} error={errors.dojo_id} />
           <Input label="Nama lengkap" value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} error={errors.full_name} required />
