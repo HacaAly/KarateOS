@@ -13,11 +13,13 @@ const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
 
 /** Perkecil (maks 1024 px) & kompres di browser agar foto kamera besar tetap muat di batas 2 MB. */
 export async function prepareImage(file: File): Promise<File> {
-  if (!file.type.startsWith('image/')) throw new Error('File harus berupa gambar (JPG, PNG, atau WebP).')
-  if (!ALLOWED.includes(file.type)) throw new Error('Format foto harus JPG, PNG, atau WebP.')
-  let out: File = file
+  // Beberapa HP/pemilih file mengirim type kosong atau HEIC; tentukan dari ekstensi bila perlu.
+  const ext0 = file.name.split('.').pop()?.toLowerCase() ?? ''
+  const guessed = file.type || ({ jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif' } as Record<string, string>)[ext0] || ''
+  if (!guessed.startsWith('image/')) throw new Error('File harus berupa gambar.')
+  let out: File | null = null
   try {
-    const bmp = await createImageBitmap(file)
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' })
     const scale = Math.min(1, 1024 / Math.max(bmp.width, bmp.height))
     const canvas = document.createElement('canvas')
     canvas.width = Math.max(1, Math.round(bmp.width * scale)); canvas.height = Math.max(1, Math.round(bmp.height * scale))
@@ -25,8 +27,12 @@ export async function prepareImage(file: File): Promise<File> {
     bmp.close()
     let blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/webp', 0.85))
     if (!blob || blob.type !== 'image/webp') blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.85))
-    if (blob && (blob.size < file.size || scale < 1)) out = new File([blob], 'foto', { type: blob.type })
-  } catch { /* gagal memproses → pakai file asli (tetap divalidasi ukuran) */ }
+    if (blob) out = new File([blob], 'foto', { type: blob.type })
+  } catch { /* tidak bisa didekode browser */ }
+  if (!out) {
+    if (!ALLOWED.includes(guessed)) throw new Error('Format foto tidak didukung browser ini (mis. HEIC). Ubah kamera ke format "Paling kompatibel"/JPG, atau pilih foto lain.')
+    out = file
+  }
   if (out.size > MAX_BYTES) throw new Error('Ukuran foto masih melebihi 2 MB setelah dikompres. Pilih foto lain.')
   return out
 }
