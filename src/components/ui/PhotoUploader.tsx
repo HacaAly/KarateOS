@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { Camera, Trash2 } from 'lucide-react'
 import { Avatar } from './Avatar'
 import { Button } from './Button'
@@ -14,6 +14,7 @@ export function PhotoUploader({ kind, id, name, url, canEdit, size = 'xl', round
 }) {
   const toast = useToast()
   const fileRef = useRef<HTMLInputElement>(null)
+  const inputId = useId()
   const [busy, setBusy] = useState<'file' | 'remove' | null>(null)
   const [confirm, setConfirm] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -39,9 +40,13 @@ export function PhotoUploader({ kind, id, name, url, canEdit, size = 'xl', round
       <Avatar key={url ?? 'none'} name={name} src={url} size={size} rounded={rounded} />
       {canEdit && (
         <div className="min-w-0">
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label={`Pilih foto untuk ${name}`} onChange={(e) => void onFile(e.target.files?.[0])} />
+          {/* <label> membuka pemilih file secara native (lebih andal di HP & browser dalam-aplikasi daripada input.click() pada elemen display:none) */}
+          <input ref={fileRef} id={inputId} type="file" accept="image/*" className="peer sr-only" disabled={!!busy} onChange={(e) => void onFile(e.target.files?.[0])} />
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="secondary" icon={<Camera size={16} />} loading={busy === 'file'} disabled={!!busy && busy !== 'file'} onClick={() => fileRef.current?.click()}>Unggah foto</Button>
+            <label htmlFor={inputId} aria-disabled={!!busy}
+              className={`inline-flex min-h-11 cursor-pointer select-none items-center justify-center gap-2 rounded-(--radius-control) border border-ink-200 bg-white px-3 text-sm font-semibold text-ink-900 shadow-sm transition hover:bg-ink-50 active:bg-ink-100 sm:min-h-9 ${busy ? 'pointer-events-none opacity-60' : ''}`}>
+              <Camera size={16} aria-hidden="true" />{busy === 'file' ? 'Mengunggah…' : 'Unggah foto'}
+            </label>
             {url && <Button size="sm" variant="ghost" icon={<Trash2 size={16} />} disabled={!!busy} onClick={() => setConfirm(true)}>Hapus foto</Button>}
           </div>
           <p className="mt-1.5 text-xs text-ink-500">JPG, PNG, atau WebP. Foto besar dikecilkan otomatis (maks. 2 MB).</p>
